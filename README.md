@@ -9,8 +9,9 @@ Introduction modules:
 8) State preparation
 9) Measurements
 10) Expectation values
-11) 
+11) Multi-qubit systems 
 12)
 13) 
 14)
+15)
 Xanadus Quantum Codebook is cool :)

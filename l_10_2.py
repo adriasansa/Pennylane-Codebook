@@ -21,15 +21,15 @@ for shots in shot_values:
     ##################
 
     # CREATE A DEVICE, CREATE A QNODE, AND RUN IT
-    dev = qml.device('default.qubit', wires=1, shots=shot_values[shots])
+    dev = qml.device('default.qubit', wires=1, shots=shots)
     @qml.qnode(dev)
-    
-    qml.RX(np.pi/4, wires = 0)
-    qml.Hadamard(0)
-    qml.PauliZ(0)
+    def circuit():
+        qml.RX(np.pi/4, wires = 0)
+        qml.Hadamard(0)
+        qml.PauliZ(0)
+        return qml.expval( qml.PauliY(0) )
     
     # STORE RESULT IN SHOT_RESULTS ARRAY
-    shot_results[shots] = qml.expval( qml.PauliY(0) )
-    return
+    shot_results.append(circuit())
 
 print(qml.math.unwrap(shot_results))
