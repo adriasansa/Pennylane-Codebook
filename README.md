@@ -10,8 +10,8 @@ Introduction modules:
 9) Measurements
 10) Expectation values
 11) Multi-qubit systems 
-12)
-13) 
-14)
+12) Quantum entanglement
+13) Controlled gates
+14) ""Challenge""
 15)
 Xanadus Quantum Codebook is cool :)
