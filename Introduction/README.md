@@ -13,5 +13,5 @@ Introduction modules:
 12) Quantum entanglement
 13) Controlled gates
 14) ""Challenge""
-15)
+15) Teleportation
 Xanadus Quantum Codebook is cool :)
