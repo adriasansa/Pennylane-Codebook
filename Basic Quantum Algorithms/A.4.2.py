@@ -13,6 +13,7 @@ n_bits = 4
 dev = qml.device("default.qubit", wires=n_bits)
 
 combos = ((0,0,0,0),(1,1,1,1),(0,0,1,0))
+# combos = np.random.randint(2, size=(3, n_bits))
 
 def multisol_oracle_matrix(combos):
     """Return the oracle matrix for a set of solutions.
