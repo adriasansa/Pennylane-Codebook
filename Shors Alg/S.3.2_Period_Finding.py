@@ -6,6 +6,12 @@ Created on Tue Aug 27 16:58:38 2024
 @author: adria
 """
 
+# Only running in codebook, assumes we have get_phase :( , get_phase in turn assumes we know the eigenvector and prepare it in the estimation wires
+
+import pennylane as qml
+import fractions
+
+
 def U():
     qml.SWAP(wires=[2, 3])
     qml.SWAP(wires=[1, 2])
@@ -36,15 +42,15 @@ def get_period(matrix):
     fraction = []
     denominator = 0
     for i in range(shots):
-        shot = fractions.Fraction( get_phase(matrix))
+        shot = fractions.Fraction( get_phase(matrix)).limit_denominator(2 ** n_estimation_wires)
         
         if shot.denominator > denominator:
             denominator = shot.denominator
-
-        shot = fractions.Fraction( get_phase(matrix), denominator = denominator)
+        
         fraction.append( shot )
     print(fraction)
-    return
+    return denominator
 
 
 print(get_period(matrix))
+
