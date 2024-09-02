@@ -35,27 +35,27 @@ def is_unsafe(alpha, beta, epsilon):
         (bool): 'True' if alpha and beta are epsilon-unsafe coefficients. 'False' in the other case.
 
     """
+    
+    
+    #opt = qml.optimize.RotosolveOptimizer(substep_optimizer="brute", substep_kwargs=4)
+    
+   
     dev = qml.device("default.qubit", wires=2)
-
-    def Fidelity(theta):
-        return qml.math.fidelity(circuit(False, theta), circuit(True, theta))
     
     @qml.qnode(dev)
-    def circuit(encoding, theta):
+    
+    def circuit(theta):
+        
         U_psi(theta) #Eventually have to check out different thetas!!!
-        if encoding:
-            qml.RZ(alpha, 0)
-            qml.RX(beta, 0)
-        
-            qml.RZ(alpha, 1)
-            qml.RX(beta, 1)  
-        
-        return qml.density_matrix(wires = [0,1])
+             
+        return qml.expval( qml.RZ(alpha, 0)@qml.RX(beta, 0)@qml.RZ(alpha, 1)@qml.RX(beta, 1) )
+    
+    
     F = []
     # theta_scan = np.linspace(0, 2*np.pi, 10)
     
-    for i in np.linspace(0, 2*np.pi, 20):
-        F.append(Fidelity(i)**2)# Wrong, should be squared?
+    for i in np.linspace(0, 2*np.pi, 10):
+        F.append(abs(circuit(i))
         
     import matplotlib.pyplot as plt
     plt.plot(F)
