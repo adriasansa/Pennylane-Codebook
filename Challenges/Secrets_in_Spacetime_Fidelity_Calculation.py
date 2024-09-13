@@ -46,7 +46,7 @@ def is_unsafe(alpha, beta, epsilon):
         if encoding:
             qml.RZ(alpha, 0)
             qml.RX(beta, 0)
-        
+
             qml.RZ(alpha, 1)
             qml.RX(beta, 1)  
         
@@ -55,7 +55,7 @@ def is_unsafe(alpha, beta, epsilon):
     # theta_scan = np.linspace(0, 2*np.pi, 10)
     
     for i in np.linspace(0, 2*np.pi, 20):
-        F.append(Fidelity(i)**2)# Wrong, should be squared?
+        F.append(Fidelity(i))# Wrong, should be squared?
         
     import matplotlib.pyplot as plt
     plt.plot(F)

@@ -41,21 +41,35 @@ def is_unsafe(alpha, beta, epsilon):
     
    
     dev = qml.device("default.qubit", wires=2)
+
+    def encoding_Operator(alpha, beta):
+            qml.RZ(alpha, 0)
+            qml.RX(beta, 0)
+
+            qml.RZ(alpha, 1)
+            qml.RX(beta, 1)  
+            return
     
     @qml.qnode(dev)
     
-    def circuit(theta):
+    def circuit(theta, alpha, beta):
+        
         
         U_psi(theta) #Eventually have to check out different thetas!!!
-             
-        return qml.expval( qml.RZ(alpha, 0)@qml.RX(beta, 0)@qml.RZ(alpha, 1)@qml.RX(beta, 1) )
-    
+        
+        # density_matrix = qml.density_matrix(wires = [0, 1])
+        
+        # qml.adjoint(encoding_Operator(alpha, beta))
+        encoding_Operator(alpha, beta)
+        
+        return qml.expval( qml.PauliX(0) )
+        # return qml.expval( density_matrix )
     
     F = []
     # theta_scan = np.linspace(0, 2*np.pi, 10)
     
-    for i in np.linspace(0, 2*np.pi, 10):
-        F.append(abs(circuit(i))
+    for i in np.linspace(0, 2*np.pi, 20):
+        F.append( circuit(i, alpha, beta)**2 )
         
     import matplotlib.pyplot as plt
     plt.plot(F)
