@@ -60,7 +60,7 @@ def is_unsafe(alpha, beta, epsilon):
     import matplotlib.pyplot as plt
     plt.plot(F)
     F = np.max(F)
-    # print(F)
+    print(F)
     return F > 1 - epsilon
 
 # These functions are responsible for testing the solution.
@@ -103,3 +103,6 @@ for i, (input_, expected_output) in enumerate(test_cases):
 
         else:
             print("Correct!")
+
+import matplotlib.pyplot as plt        
+plt.show(block=True)

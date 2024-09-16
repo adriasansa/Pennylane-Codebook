@@ -35,7 +35,6 @@ def is_unsafe(alpha, beta, epsilon):
         (bool): 'True' if alpha and beta are epsilon-unsafe coefficients. 'False' in the other case.
 
     """
-   
     dev = qml.device("default.qubit", wires=2)
 
     def encoding_Operator(alpha, beta):
@@ -52,25 +51,42 @@ def is_unsafe(alpha, beta, epsilon):
         return qml.density_matrix(wires = [0, 1])
     
     @qml.qnode(dev)
-    def circuit(theta, alpha, beta):
+    def circuit(theta):
         
         U_psi(theta) #Eventually have to check out different thetas!!!
 
         density_Matrix = qml.Hermitian( psi_Density_Matrix(theta), wires = [0,1])
-        
         encoding_Operator(alpha, beta)
         
         return qml.expval( density_Matrix )
-    F = []
     
-    for i in np.linspace(0, 2*np.pi, 20):
-        F.append( circuit(i, alpha, beta) )
-        
-        
-        
+    
+    # Define your Hamiltonian 
+    theta = np.array(0.0, requires_grad=True) # Initial guess parameters
+    angle = [theta] # Store the values of the circuit parameter
+    cost = [circuit(theta)] # Store the values of the cost function
+
+    opt = qml.GradientDescentOptimizer(stepsize=0.2) # Our optimizer!
+    max_iterations = 100 # Maximum number of calls to the optimizer 
+    conv_tol = 1e-02 # Convergence threshold to stop our optimization procedure
+    
+    for n in range(max_iterations):
+        theta, prev_cost = opt.step_and_cost(lambda params: -circuit(params), theta)
+        cost.append(circuit(theta))
+        angle.append(theta)
+        conv = np.abs(cost[-1] - prev_cost)
+        if n % 10 == 0:
+            # print(cost[-1])
+            # print(f"Step = {n}, " + "Cost function = " + str(cost[-1]) )
+            if conv <= conv_tol:
+                break
+    
+    # print("\n" f"Final value of the cost function = {cost[-1]:.8f} ")
     import matplotlib.pyplot as plt
-    plt.plot(F)
-    F = np.max(F)
+    plt.plot(cost)
+    plt.show(block = True)
+    F = cost[-1]
+
     print(F)
     return F > 1 - epsilon
 
@@ -114,6 +130,3 @@ for i, (input_, expected_output) in enumerate(test_cases):
 
         else:
             print("Correct!")
-            
-import matplotlib.pyplot as plt        
-plt.show(block=True)
