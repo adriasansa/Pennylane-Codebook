@@ -60,28 +60,35 @@ def is_unsafe(alpha, beta, epsilon):
         
         return qml.expval( density_Matrix )
     
+    # Rotosolve optimizer
+    opt = qml.optimize.RotosolveOptimizer()
+    num_steps = 3
     
-    # Define your Hamiltonian 
-    theta = np.array(3.0, requires_grad=True) # Initial guess parameters -> It works for initial parameter = 0.0 but not for 3.0
-    angle = [theta] # Store the values of the circuit parameter
-    cost = [circuit(theta)] # Store the values of the cost function
+    init_param = np.array(0.0, requires_grad=True)
+    # rot_weights = 1
+    # crot_weights = 1
 
-    opt = qml.GradientDescentOptimizer(stepsize=0.5) # Our optimizer!
-    max_iterations = 100 # Maximum number of calls to the optimizer 
-    conv_tol = 1e-06 # Convergence threshold to stop our optimization procedure
+    nums_frequency = {
+        "rot_param": {(0,): 1},
+        "layer_par": {(): 1},
+        "crot_param": {(0,): 1},
+        }
     
-    for n in range(max_iterations):
-        theta, prev_cost = opt.step_and_cost(lambda params: -circuit(params), theta)
-        cost.append(circuit(theta))
-        angle.append(theta)
-        conv = np.abs(np.abs(cost[-1]) - np.abs(prev_cost))
-        if n % 10 == 0:
-            # print(cost[-1])
-            # print(f"Step = {n}, " + "Cost function = " + str(cost[-1]) )
-            if conv <= conv_tol:
-                break
+    param = init_param
+    cost_rotosolve = []
+    for step in range(num_steps):
+        param, cost = opt.step_and_cost(
+            circuit,
+            param
+            # nums_frequency=nums_frequency,
+            # full_output=True,
+            # rot_weights=rot_weights,
+            # crot_weights=crot_weights,
+            )
+    print(f"Cost before step: {cost}")
+    # print(f"Minimization substeps: {np.round(sub_cost, 6)}")
+    # cost_rotosolve.extend(sub_cost)
     
-    # print("\n" f"Final value of the cost function = {cost[-1]:.8f} ")
     import matplotlib.pyplot as plt
     plt.plot(cost)
     # plt.plot(angle)
