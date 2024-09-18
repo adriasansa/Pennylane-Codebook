@@ -51,49 +51,45 @@ def is_unsafe(alpha, beta, epsilon):
         return qml.density_matrix(wires = [0, 1])
     
     @qml.qnode(dev)
-    def circuit(theta):
+    def circuit(theta, empty):
         
         U_psi(theta) #Eventually have to check out different thetas!!!
 
         density_Matrix = qml.Hermitian( psi_Density_Matrix(theta), wires = [0,1])
         encoding_Operator(alpha, beta)
         
-        return qml.expval( density_Matrix )
+        return qml.expval( -density_Matrix )
     
     # Rotosolve optimizer
     opt = qml.optimize.RotosolveOptimizer()
-    num_steps = 3
+    num_steps = 4
     
-    init_param = np.array(0.0, requires_grad=True)
-    # rot_weights = 1
-    # crot_weights = 1
+    init_param = (
+        np.array(0.0, requires_grad=True),
+        np.array(0.5, requires_grad=False),
+    )
 
     nums_frequency = {
-        "rot_param": {(0,): 1},
-        "layer_par": {(): 1},
-        "crot_param": {(0,): 1},
-        }
-    
+        "theta": {(): 3}, #If 1 then analytic formula is used!
+        "empty": {(): 1},
+    }
     param = init_param
-    cost_rotosolve = []
+
     for step in range(num_steps):
         param, cost = opt.step_and_cost(
             circuit,
-            param
-            # nums_frequency=nums_frequency,
+            *param,
+            nums_frequency=nums_frequency,
             # full_output=True,
             # rot_weights=rot_weights,
             # crot_weights=crot_weights,
             )
-    print(f"Cost before step: {cost}")
+    # print(f"Cost before step: {cost}")
     # print(f"Minimization substeps: {np.round(sub_cost, 6)}")
     # cost_rotosolve.extend(sub_cost)
     
-    import matplotlib.pyplot as plt
-    plt.plot(cost)
-    # plt.plot(angle)
-    plt.show(block = True)
-    F = cost[-1]
+    # print(cost)
+    F = -cost
 
     print(F)
     return F > 1 - epsilon
