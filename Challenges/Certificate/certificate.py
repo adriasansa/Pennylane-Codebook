@@ -22,16 +22,15 @@ def W(params):
         Since this function is a subcircuit, you must not return anything.
     
     """
-    rows, columns = np.shape(params)
-    
+    columns, rows = np.shape(params)
     for i in range(columns):
         # First layer of RY rotations
         for j in range(rows):
-            qml.RY(params[i][j])
+            qml.RY(params[i][j], wires = j)
         # Entangling gates
-        for j in range(rows):
+        for j in range(rows-1):
             qml.CNOT(wires =[j, j+1])
-
+        qml.CNOT(wires =[rows-1, 0])
     
 
 def S(g, x, num_wires):
@@ -51,16 +50,16 @@ def S(g, x, num_wires):
         Since this function is a subcircuit, you must not return anything.
     
     """
-    
+    # print(num_wires)
+    # print(x)
     for i in range(num_wires):
-        op = qml.exp(g, coeff = 1j*x, wires = i)
-        qml.apply(op)
+        qml.exp(g(i), coeff = 1j*x)
     # Put your code here
     
 
 # Create a device
 
-dev = 
+dev = qml.device("default.qubit")
 
 @qml.qnode(dev, expansion_strategy = "device")
 def quantum_model(param_set, g, x):
@@ -80,7 +79,16 @@ def quantum_model(param_set, g, x):
         basis on the first wire.
     """
     
+    number_Arrays = np.shape(param_set)[0]
+    num_wires = np.shape(param_set[0])[1]
+    for i in range(number_Arrays-1):
+        W(param_set[i])
 
+        S(g, x, num_wires)
+
+    W(param_set[-1])
+
+    return qml.probs(wires = 0)
     # Put your code here
     
 
