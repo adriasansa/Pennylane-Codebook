@@ -11,15 +11,15 @@ import matplotlib.pyplot as plt
 
 
 x = np.linspace(0,10, 100)
-a = np.linspace(0,2, 100)
+a = np.linspace(0,10, 100)
 
-limit = 0.8
+limit = 0.99
 
 for i in a:
-    y_0 = [np.cos(i/2)*np.cos(a*i/2) for i in x]
-    y_1 = [np.cos(i/2)*np.sin(a*i/2) for i in x]
-    y_2 = [np.sin(i/2)*np.sin(a*i/2) for i in x]
-    y_3 = [np.sin(i/2)*np.cos(a*i/2) for i in x]
+    y_0 = [np.cos(j/2)*np.cos(i*j/2) for j in x]
+    y_1 = [np.cos(j/2)*np.sin(i*j/2) for j in x]
+    y_2 = [np.sin(j/2)*np.sin(i*j/2) for j in x]
+    y_3 = [np.sin(j/2)*np.cos(i*j/2) for j in x]
     
     max_0 = float(np.max(y_0))
     max_1 = float(np.max(y_1))
