@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 
 
 x = np.linspace(0,10, 100)
-a = np.linspace(0,10, 100)
+a = np.linspace(0,9.9, 100)
 
 limit = 0.99
 
