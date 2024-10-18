@@ -35,8 +35,9 @@ def cost_function(params):
     max_record = np.average(maxs)
     return 1 - max_record
 
-res = minimize(cost_function, (5, 7) ,method='Nelder-Mead', tol=1e-3)
+res = minimize(cost_function, (5, 7) ,method='Nelder-Mead', tol=1e-6)
 print(res.fun)
+print(res.x)
 
 alpha_optimal = res.x[0]
 beta_optimal = res.x[1]
