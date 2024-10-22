@@ -9,7 +9,7 @@ Created on Tue Oct 15 14:05:49 2024
 import pennylane as qml
 import pennylane.numpy as np
 import matplotlib.pyplot as plt
-from scipy.optimize import minimize
+from scipy.optimize import minimize, differential_evolution
 
 dev = qml.device("default.qubit", wires=3)
 @qml.qnode(dev)
@@ -35,18 +35,16 @@ def cost_function(params):
     max_record = np.average(maxs)
     return 1 - max_record
 
-res = minimize(cost_function, (5.37695312, 7) ,method='Nelder-Mead', tol=1e-6)
+bounds = [(0, 10), (0, 10)]
+res = differential_evolution(cost_function, bounds)
 print(res.fun)
-print(res.x)
+print(res.x) # E.g. [7.86614467 6.19630591]
 
 alpha_optimal = res.x[0]
 beta_optimal = res.x[1]
-
-
 #%%
 dim_Theta = 1000
 theta = np.linspace(0, 10, dim_Theta)
-
 for i in range(8):
     y = [circuit(alpha_optimal, beta_optimal, theta[j])[i] for j in range(dim_Theta)] 
     plt.plot(theta, y)
