@@ -20,11 +20,12 @@ def plot():
     y_1 = [(np.cos((j-np.pi/2))*np.cos((j-np.pi/2)/2) )**2 for j in x]
     y_2 = [(np.cos((j-np.pi))*np.cos((j-np.pi)/2) )**2 for j in x]
     y_3 = [(np.cos((j-3*np.pi/2))*np.cos((j-3*np.pi/2)/2) )**2 for j in x]
-    
+    # sum_ = [y_0[i]+y_1[i]+y_2[i]+y_3[i] for i in range(len(y_0))]
     plt.plot(y_0, label = "00")
     plt.plot(y_1, label = "10")
     plt.plot(y_2, label = "01")
     plt.plot(y_3, label = "11")
+    # plt.plot(sum_, label = "sum")
     plt.legend()
 
 plot()
