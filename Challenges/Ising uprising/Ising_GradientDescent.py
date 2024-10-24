@@ -59,28 +59,22 @@ def train(h):
     Returns:
         (numpy.array): parameters that best approximate the ground state.
     """
+    params_initial = np.array([[0.0, 0.0], [0.0, 0.0], [0.0, 0.0], [0.0, 0.0]], requires_grad=True)
     
-    H = create_Hamiltonian(h)
+    def quant_fun(params):
+        return model(params, create_Hamiltonian(h))
     
-    eta = 0.01
-    init_params = np.array([[0.0, 0.0], [0.0, 0.0], [0.0, 0.0], [0.0, 0.0]], requires_grad=True)
-    import random
-    for i in range(4):
-        for j in range(2):
-            init_params[i][j] = random.random()*np.pi
-    
-    theta = [init_params, H] # Initial guess parameters
+    theta = params_initial # Initial guess parameters
     angle = [theta] # Store the values of the circuit parameter
-    cost = [model(*theta)] # Store the values of the cost function
-    
-    opt = qml.QNGOptimizer(eta)
+    cost = [quant_fun(theta)] # Store the values of the cost function
 
-    max_iterations = 200 # Maximum number of calls to the optimizer 
-    conv_tol = 1e-04 # Convergence threshold to stop our optimization procedure
-    
+    opt = qml.GradientDescentOptimizer() # Our optimizer!
+    max_iterations = 100 # Maximum number of calls to the optimizer 
+    conv_tol = 1e-06 # Convergence threshold to stop our optimization procedure
+
     for n in range(max_iterations):
-        theta, prev_cost = opt.step_and_cost(model, *theta)
-        cost.append(model(*theta))
+        theta, prev_cost = opt.step_and_cost(quant_fun, theta)
+        cost.append(quant_fun(theta))
         angle.append(theta)
 
         conv = np.abs(cost[-1] - prev_cost)
@@ -89,10 +83,10 @@ def train(h):
         if conv <= conv_tol:
             break
     
-    # print("\n" f"Final value of the cost function = {cost[-1]:.8f} ")
-    # print("\n" f"Optimal value of the first circuit parameter =    "  + str(angle[-1][:][:]))
+    print("\n" f"Final value of the cost function = {cost[-1]:.8f} ")
+    print("\n" f"Optimal value of the first circuit parameter =    "  + str(angle[-1][:][:]))
         
-    return angle[-1][0][:][:]
+    return angle[-1][:][:]
 
 
 # These functions are responsible for testing the solution.
