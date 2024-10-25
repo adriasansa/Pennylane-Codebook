@@ -42,10 +42,10 @@ def model(params, H):
     Returns:
         (float): Expected value with respect to the Hamiltonian H
     """
-    for i in range(4):
-        qml.RX(params[i, 0], wires = i)
-        qml.RZ(params[i, 1], wires = i)
-    
+    # for i in range(4):
+    #     qml.RX(params[i, 0], wires = i)
+    #     qml.RZ(params[i, 1], wires = i)
+    qml.ArbitraryStatePreparation(params, wires=[0, 1, 2, 3])
     return qml.expval(H)
 
 def train(h):
@@ -63,11 +63,10 @@ def train(h):
     H = create_Hamiltonian(h)
     
     eta = 0.01
-    init_params = np.array([[0.0, 0.0], [0.0, 0.0], [0.0, 0.0], [0.0, 0.0]], requires_grad=True)
-    import random
-    for i in range(4):
-        for j in range(2):
-            init_params[i][j] = random.random()*np.pi
+    init_params = np.zeros(30, requires_grad=True)
+    # import random
+    # for i in range(30):
+    #     init_params[i] = random.random()*np.pi
     
     theta = [init_params, H] # Initial guess parameters
     angle = [theta] # Store the values of the circuit parameter
@@ -84,16 +83,16 @@ def train(h):
         angle.append(theta)
 
         conv = np.abs(cost[-1] - prev_cost)
-        # if n % 10 == 0:
-            # print(f"Step = {n},  Cost function = {cost[-1]:.8f} ")
+        if n % 10 == 0:
+            print(f"Step = {n},  Cost function = {cost[-1]:.8f} ")
         if conv <= conv_tol:
             break
     
     print("\n" f"Final value of the cost function = {cost[-1]:.8f} ")
-    print("\n" f"Optimal value of the first circuit parameter =    "  + str(angle[-1][0][:][:]))
+    print("\n" f"Optimal value of the first circuit parameter =    "  + str(angle[-1][0][:]))
     # print(angle[-1][0][:][:])
     
-    return angle[-1][0][:][:]
+    return angle[-1][0][:]
 
 
 # These functions are responsible for testing the solution.

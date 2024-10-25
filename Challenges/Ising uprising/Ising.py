@@ -62,37 +62,45 @@ def train(h):
     
     H = create_Hamiltonian(h)
     
-    eta = 0.01
-    init_params = np.array([[0.0, 0.0], [0.0, 0.0], [0.0, 0.0], [0.0, 0.0]], requires_grad=True)
+    opt_kwargs = {"num_steps": 10}
+    opt = qml.optimize.RotosolveOptimizer(substep_optimizer="brute", substep_kwargs=opt_kwargs)
+    num_steps = 10
+    
+    init_angles = np.array([[0.0, 0.0], [0.0, 0.0], [0.0, 0.0], [0.0, 0.0]], requires_grad=True)
     import random
     for i in range(4):
         for j in range(2):
-            init_params[i][j] = random.random()*np.pi
+            init_angles[i][j] = random.random()*np.pi
     
-    theta = [init_params, H] # Initial guess parameters
-    angle = [theta] # Store the values of the circuit parameter
-    cost = [model(*theta)] # Store the values of the cost function
-    
-    opt = qml.QNGOptimizer(eta)
+    init_param = (
+        np.array(init_angles, requires_grad=True),
+        H,
+    )
 
-    max_iterations = 200 # Maximum number of calls to the optimizer 
-    conv_tol = 1e-04 # Convergence threshold to stop our optimization procedure
-    
-    for n in range(max_iterations):
-        theta, prev_cost = opt.step_and_cost(model, *theta)
-        cost.append(model(*theta))
-        angle.append(theta)
+    nums_frequency = {
+        "params": {(0,0): 1, (0,1): 1,
+                   (1,0): 1, (1,1): 1, 
+                   (2,0): 1, (2,1): 1, 
+                   (3,0): 1, (3,1): 1, 
+                   },
+    }
 
-        conv = np.abs(cost[-1] - prev_cost)
-        if n % 10 == 0:
-            print(f"Step = {n},  Cost function = {cost[-1]:.8f} ")
-        if conv <= conv_tol:
-            break
-    
-    # print("\n" f"Final value of the cost function = {cost[-1]:.8f} ")
-    # print("\n" f"Optimal value of the first circuit parameter =    "  + str(angle[-1][:][:]))
+    param = init_param
+    cost_rotosolve = []
+    for step in range(num_steps):
+        param, cost, sub_cost = opt.step_and_cost(
+            model,
+            *param,
+            nums_frequency=nums_frequency,
+            full_output=True,
+        )
+        # print(f"Cost before step: {cost}")
+        # print(f"Minimization substeps: {np.round(sub_cost, 6)}")
+        cost_rotosolve.extend(sub_cost)
         
-    return angle[-1][0][:][:]
+    print(cost)
+    print(param[0][:][:])
+    return param[0][:][:]
 
 
 # These functions are responsible for testing the solution.

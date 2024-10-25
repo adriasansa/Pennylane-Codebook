@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Thu Oct 24 18:06:54 2024
+Created on Fri Oct 25 16:38:48 2024
 
 @author: adria
 """
@@ -19,10 +19,12 @@ def create_Hamiltonian(h):
     Returns:
         (qml.Hamiltonian): Hamiltonian of the statement associated to h
     """
+
     obs_Z = qml.Z(0)@qml.Z(1)+ qml.Z(1)@qml.Z(2)+ qml.Z(2)@qml.Z(3)+ qml.Z(3)@qml.Z(0) 
     obs_X = qml.X(0)+qml.X(1)+ qml.X(2)+qml.X(3)
     obs = [obs_Z, obs_X]
     coeffs = [-1, -h]
+
     return qml.Hamiltonian(coeffs, obs)
 
 dev = qml.device("default.qubit", wires=4)
@@ -42,9 +44,8 @@ def model(params, H):
     Returns:
         (float): Expected value with respect to the Hamiltonian H
     """
-    for i in range(4):
-        qml.RX(params[i, 0], wires = i)
-        qml.RZ(params[i, 1], wires = i)
+
+    qml.ArbitraryStatePreparation(params, wires=[0, 1, 2, 3])
     
     return qml.expval(H)
 
@@ -59,41 +60,47 @@ def train(h):
     Returns:
         (numpy.array): parameters that best approximate the ground state.
     """
-    
+
     H = create_Hamiltonian(h)
     
-    eta = 0.01
-    init_params = np.array([[0.0, 0.0], [0.0, 0.0], [0.0, 0.0], [0.0, 0.0]], requires_grad=True)
-    import random
-    for i in range(4):
-        for j in range(2):
-            init_params[i][j] = random.random()*np.pi
+    opt_kwargs = {"num_steps": 5}
+    opt = qml.optimize.RotosolveOptimizer(substep_optimizer="brute", substep_kwargs=opt_kwargs)
+    num_steps = 4
     
-    theta = [init_params, H] # Initial guess parameters
-    angle = [theta] # Store the values of the circuit parameter
-    cost = [model(*theta)] # Store the values of the cost function
+    init_angles = np.zeros(30, requires_grad=True)
+    # import random
+    # for i in range(4):
+    #     for j in range(2):
+    #         init_angles[i][j] = random.random()*np.pi
     
-    opt = qml.QNGOptimizer(eta)
+    init_param = (
+        np.array(init_angles, requires_grad=True),
+        H,
+    )
 
-    max_iterations = 100 # Maximum number of calls to the optimizer 
-    conv_tol = 1e-04 # Convergence threshold to stop our optimization procedure
-    
-    for n in range(max_iterations):
-        theta, prev_cost = opt.step_and_cost(model, *theta)
-        cost.append(model(*theta))
-        angle.append(theta)
+    nums_frequency = {
+        "params": {(0,): 1, (1,): 1, (2,): 1, (3,): 1, (4,): 1, (5,): 1, (6,): 1, (7,): 1, (8,): 1, (9,): 1, (10,): 1,
+                   (10,): 1, (11,): 1, (12,): 1, (13,): 1, (14,): 1, (15,): 1, (16,): 1, (17,): 1, (18,): 1, (19,): 1,
+                   (20,): 1, (21,): 1, (22,): 1, (23,): 1, (24,): 1, (25,): 1, (26,): 1, (27,): 1, (28,): 1, (29,): 1,
+                   },
+    }
 
-        conv = np.abs(cost[-1] - prev_cost)
-        # if n % 10 == 0:
-            # print(f"Step = {n},  Cost function = {cost[-1]:.8f} ")
-        if conv <= conv_tol:
-            break
-    
-    print("\n" f"Final value of the cost function = {cost[-1]:.8f} ")
-    print("\n" f"Optimal value of the first circuit parameter =    "  + str(angle[-1][0][:][:]))
-    # print(angle[-1][0][:][:])
-    
-    return angle[-1][0][:][:]
+    param = init_param
+    cost_rotosolve = []
+    for step in range(num_steps):
+        param, cost, sub_cost = opt.step_and_cost(
+            model,
+            *param,
+            nums_frequency=nums_frequency,
+            full_output=True,
+        )
+        # print(f"Cost before step: {cost}")
+        # print(f"Minimization substeps: {np.round(sub_cost, 6)}")
+        cost_rotosolve.extend(sub_cost)
+        
+    print(cost)
+    # print(param[0][:][:])
+    return param[0][:][:]
 
 
 # These functions are responsible for testing the solution.
