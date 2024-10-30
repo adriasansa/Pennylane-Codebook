@@ -23,9 +23,18 @@ def cost_hamiltonian(edges):
     - pennylane.Operator: The cost Hamiltonian associated with the graph.
     """
     # Put your code here #
+    shape = np.shape(edges)
     
-    obs = [obs_Z, obs_X]
-    coeffs = [-1, -h]
+    obs_edges = 0
+    for i in range(shape[0]):
+        obs_edges += qml.Z(wires=edges[i][0])@qml.Z(wires=edges[i][1])+qml.Z(wires=edges[i][0])+qml.Z(wires=edges[i][1])
+    
+    obs_vertices = 0
+    for i in range(np.max(edges)):
+        obs_vertices += qml.Z(wires = i)
+    
+    obs = [obs_edges, obs_vertices]
+    coeffs = [3/4, -1]
     return qml.Hamiltonian(coeffs, obs)
     
 
@@ -42,8 +51,11 @@ def mixer_hamiltonian(edges):
     """
 
     # Put your code here #
-    for i in range(len(edges)):
-        obs =+ qml.X(i)
+    obs_vertices = 0
+    for i in range(np.max(edges)):
+        obs_vertices += qml.X(wires = i)
+    
+    obs = [obs_vertices]
     coeffs = [1]
     return qml.Hamiltonian(coeffs, obs)
 
