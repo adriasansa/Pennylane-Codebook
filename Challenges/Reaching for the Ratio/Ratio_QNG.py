@@ -125,7 +125,7 @@ def optimize(edges):
     angle = [theta] # Store the values of the circuit parameter
     cost = [qaoa_expval(*theta)] # Store the values of the cost function
     
-    opt = qml.GradientDescentOptimizer(eta)
+    opt = qml.QNGOptimizer(eta)
 
     max_iterations = 100 # Maximum number of calls to the optimizer 
     conv_tol = 1e-04 # Convergence threshold to stop our optimization procedure

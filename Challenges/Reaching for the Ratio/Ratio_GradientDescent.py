@@ -12,8 +12,8 @@ import pennylane.numpy as np
 # Write any helper functions you need here
 
 # import random
-num_Loops = 5 # Loops of the QAOA alg
-max_iterations = 100 # Maximum number of calls to the optimizer 
+num_Loops = 10 # Loops of the QAOA alg
+max_iterations = 200 # Maximum number of calls to the optimizer 
 
 def cost_hamiltonian(edges):
     """
@@ -86,8 +86,8 @@ def qaoa_circuit(params, edges):
         
     # Loops
     for i in range(num_Loops):
-        qml.exp(cost_hamiltonian(edges), -1j*params[i][0], num_steps = 2) #2*np.pi*
-        qml.exp(mixer_hamiltonian(edges), -1j*params[i][1], num_steps = 2) #np.pi*
+        qml.exp(cost_hamiltonian(edges), -1j*params[i][0]) #2*np.pi*
+        qml.exp(mixer_hamiltonian(edges), -1j*params[i][1]) #np.pi*
     
 # This function runs the QAOA circuit and returns the expectation value of the cost Hamiltonian
 
@@ -116,23 +116,24 @@ def optimize(edges):
     # Write your optimization routine here
     
     params_initial = np.ones([num_Loops,2], requires_grad=True)
-    eta = 0.01
-    # import random
-    # for i in range(30):
-    #     init_params[i] = random.random()*np.pi
+    # for i in range(num_Loops):
+    #     for j in range(2):
+    #         params_initial[i][j] = random.uniform(0, 1)
     
-    theta = [params_initial, edges] # Initial guess parameters
+    def quant_fun(params):
+        return qaoa_expval(params, edges)
+    
+    theta = params_initial # Initial guess parameters
     angle = [theta] # Store the values of the circuit parameter
-    cost = [qaoa_expval(*theta)] # Store the values of the cost function
-    
-    opt = qml.GradientDescentOptimizer(eta)
+    cost = [quant_fun(theta)] # Store the values of the cost function
 
-    max_iterations = 100 # Maximum number of calls to the optimizer 
-    conv_tol = 1e-04 # Convergence threshold to stop our optimization procedure
+    opt = qml.GradientDescentOptimizer() # Our optimizer!
     
+    conv_tol = 1e-04 # Convergence threshold to stop our optimization procedure
+
     for n in range(max_iterations):
-        theta, prev_cost = opt.step_and_cost(qaoa_expval, *theta)
-        cost.append(qaoa_expval(*theta))
+        theta, prev_cost = opt.step_and_cost(quant_fun, theta)
+        cost.append(quant_fun(theta))
         angle.append(theta)
 
         conv = np.abs(cost[-1] - prev_cost)
@@ -142,10 +143,9 @@ def optimize(edges):
             break
     
     print("\n" f"Final value of the cost function = {cost[-1]:.8f} ")
-    print("\n" f"Optimal value of the first circuit parameter =    "  + str(angle[-1][0][:]))
-    # print(angle[-1][0][:][:])
-    
-    return angle[-1][0][:]
+    print("\n" f"Optimal value of the first circuit parameter =    "  + str(angle[-1][:][:]))
+
+    return angle[-1][:][:]
     
 # These are auxiliary functions that will help us grade your solution. Feel free to check them out!
 

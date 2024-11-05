@@ -13,7 +13,6 @@ import pennylane.numpy as np
 
 # import random
 num_Loops = 5 # Loops of the QAOA alg
-max_iterations = 100 # Maximum number of calls to the optimizer 
 
 def cost_hamiltonian(edges):
     """
@@ -86,8 +85,8 @@ def qaoa_circuit(params, edges):
         
     # Loops
     for i in range(num_Loops):
-        qml.exp(cost_hamiltonian(edges), -1j*params[i][0], num_steps = 2) #2*np.pi*
-        qml.exp(mixer_hamiltonian(edges), -1j*params[i][1], num_steps = 2) #np.pi*
+        qml.exp(cost_hamiltonian(edges), -1j*params[i][0]) #2*np.pi*
+        qml.exp(mixer_hamiltonian(edges), -1j*params[i][1]) #np.pi*
     
 # This function runs the QAOA circuit and returns the expectation value of the cost Hamiltonian
 
@@ -115,37 +114,41 @@ def optimize(edges):
     
     # Write your optimization routine here
     
-    params_initial = np.ones([num_Loops,2], requires_grad=True)
-    eta = 0.01
+    opt_kwargs = {"num_steps": 5}
+    opt = qml.optimize.RotosolveOptimizer(substep_optimizer="brute", substep_kwargs=opt_kwargs)
+    num_steps = 4
+    
+    init_angles = np.ones([num_Loops,2], requires_grad=True)
     # import random
-    # for i in range(30):
-    #     init_params[i] = random.random()*np.pi
+    # for i in range(4):
+    #     for j in range(2):
+    #         init_angles[i][j] = random.random()*np.pi
     
-    theta = [params_initial, edges] # Initial guess parameters
-    angle = [theta] # Store the values of the circuit parameter
-    cost = [qaoa_expval(*theta)] # Store the values of the cost function
-    
-    opt = qml.GradientDescentOptimizer(eta)
+    init_param = (
+        np.array(init_angles, requires_grad=True),
+        edges,
+    )
 
-    max_iterations = 100 # Maximum number of calls to the optimizer 
-    conv_tol = 1e-04 # Convergence threshold to stop our optimization procedure
-    
-    for n in range(max_iterations):
-        theta, prev_cost = opt.step_and_cost(qaoa_expval, *theta)
-        cost.append(qaoa_expval(*theta))
-        angle.append(theta)
+    nums_frequency = {
+        "params": {(i, j): 1 for i in range(num_Loops) for j in range(2)}
+    }
 
-        conv = np.abs(cost[-1] - prev_cost)
-        if n % 10 == 0:
-            print(f"Step = {n},  Cost function = {cost[-1]:.8f} ")
-        if conv <= conv_tol:
-            break
-    
-    print("\n" f"Final value of the cost function = {cost[-1]:.8f} ")
-    print("\n" f"Optimal value of the first circuit parameter =    "  + str(angle[-1][0][:]))
-    # print(angle[-1][0][:][:])
-    
-    return angle[-1][0][:]
+    param = init_param
+    cost_rotosolve = []
+    for step in range(num_steps):
+        param, cost, sub_cost = opt.step_and_cost(
+            qaoa_expval,
+            *param,
+            nums_frequency=nums_frequency,
+            full_output=True,
+        )
+        # print(f"Cost before step: {cost}")
+        # print(f"Minimization substeps: {np.round(sub_cost, 6)}")
+        cost_rotosolve.extend(sub_cost)
+        
+    print(cost)
+    # print(param[0][:][:])
+    return param[0][:][:]
     
 # These are auxiliary functions that will help us grade your solution. Feel free to check them out!
 
