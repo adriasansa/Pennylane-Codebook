@@ -33,7 +33,7 @@ def cost_hamiltonian(edges):
         obs_edges += qml.Z(wires=edges[i][0])@qml.Z(wires=edges[i][1])+qml.Z(wires=edges[i][0])+qml.Z(wires=edges[i][1])
     
     obs_vertices = 0
-    for i in range(np.max(edges)):
+    for i in range(np.max(edges)+1):
         obs_vertices += qml.Z(wires = i)
     
     obs = [obs_edges, obs_vertices]
@@ -55,7 +55,7 @@ def mixer_hamiltonian(edges):
 
     # Put your code here #
     obs_vertices = 0
-    for i in range(np.max(edges)):
+    for i in range(np.max(edges)+1):
         obs_vertices += qml.X(wires = i)
     
     obs = [obs_vertices]
@@ -80,7 +80,7 @@ def qaoa_circuit(params, edges):
     # Put your code here
     
     # Initialization
-    for i in range(np.max(edges)):
+    for i in range(np.max(edges)+1):
         qml.Hadamard(wires = i)
         
     # Loops

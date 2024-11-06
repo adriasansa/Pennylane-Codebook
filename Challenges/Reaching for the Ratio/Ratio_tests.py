@@ -12,9 +12,31 @@ import pennylane.numpy as np
 # Write any helper functions you need here
 
 # import random
-num_Loops = 12 # Loops of the QAOA alg
+num_Loops = 7 # Loops of the QAOA alg
 max_iterations = 300 # Maximum number of calls to the optimizer 
 
+import networkx as nx
+import matplotlib.pyplot as plt
+from pennylane import qaoa
+edges_0 = [[0, 1], [1, 2], [0, 2], [2, 3]]
+edges_1 = [[0, 1], [1, 2], [2, 3], [3, 0]]
+edges_2 = [[0, 1], [0, 2], [1, 2], [1, 3], [2, 4], [3, 4]]
+
+graph_0 = nx.Graph(edges_0)
+graph_1 = nx.Graph(edges_1)
+graph_2 = nx.Graph(edges_2)
+
+cost_h, mixer_h = qaoa.min_vertex_cover(graph_0, constrained=False)
+
+nx.draw(graph_0, with_labels=True)
+plt.figure()
+nx.draw(graph_1, with_labels=True)
+plt.figure()
+nx.draw(graph_2, with_labels=True)
+plt.show()
+
+
+#%%
 
 def cost_hamiltonian(edges):
     """
@@ -136,8 +158,8 @@ def optimize(edges):
         angle.append(theta)
 
         conv = np.abs(cost[-1] - prev_cost)
-        if n % 10 == 0:
-            print(f"Step = {n},  Cost function = {cost[-1]:.8f} ")
+        # if n % 10 == 0:
+            # print(f"Step = {n},  Cost function = {cost[-1]:.8f} ")
         if conv <= conv_tol:
             break
     
@@ -171,10 +193,16 @@ def run(test_case_input: str) -> str:
     ground_energy = np.min(qml.eigvals(cost_hamiltonian(ins)))
 
     index = np.argmax(qaoa_probs(params, ins))
+    print("Solution")
+    print(bin(index))
     vector = np.zeros(len(qml.matrix(cost_hamiltonian(ins))))
     vector[index] = 1
-
     calculate_energy = np.real_if_close(np.dot(np.dot(qml.matrix(cost_hamiltonian(ins)), vector), vector))
+    print("Calculated energy")
+    print(calculate_energy)
+    print("True energy")
+    print(ground_energy)
+    
     verify = np.isclose(calculate_energy, ground_energy)
 
     if verify:

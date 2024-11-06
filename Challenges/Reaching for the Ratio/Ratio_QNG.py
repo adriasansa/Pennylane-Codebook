@@ -34,7 +34,7 @@ def cost_hamiltonian(edges):
         obs_edges += qml.Z(wires=edges[i][0])@qml.Z(wires=edges[i][1])+qml.Z(wires=edges[i][0])+qml.Z(wires=edges[i][1])
     
     obs_vertices = 0
-    for i in range(np.max(edges)):
+    for i in range(np.max(edges)+1):
         obs_vertices += qml.Z(wires = i)
     
     obs = [obs_edges, obs_vertices]
@@ -56,7 +56,7 @@ def mixer_hamiltonian(edges):
 
     # Put your code here #
     obs_vertices = 0
-    for i in range(np.max(edges)):
+    for i in range(np.max(edges)+1):
         obs_vertices += qml.X(wires = i)
     
     obs = [obs_vertices]
@@ -86,8 +86,8 @@ def qaoa_circuit(params, edges):
         
     # Loops
     for i in range(num_Loops):
-        qml.exp(cost_hamiltonian(edges), -1j*params[i][0], num_steps = 2) #2*np.pi*
-        qml.exp(mixer_hamiltonian(edges), -1j*params[i][1], num_steps = 2) #np.pi*
+        qml.exp(cost_hamiltonian(edges), -1j*params[i][0], num_steps = 5) #2*np.pi*
+        qml.exp(mixer_hamiltonian(edges), -1j*params[i][1], num_steps = 5) #np.pi*
     
 # This function runs the QAOA circuit and returns the expectation value of the cost Hamiltonian
 
